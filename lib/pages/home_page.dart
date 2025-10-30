@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
         children: _products
             .map(
               (p) => ListTile(
-                title: Text('${p.name} (${p.barcode}) (${p.rating}/5)'),
+                title: Text('${p.name} (${p.rating}/5)'),
                 subtitle: Text('${p.tag} — ${p.description}'),
               ),
             )

@@ -30,44 +30,59 @@ class _CreateProductPageState extends State<CreateProductPage> {
     super.dispose();
   }
 
+  void _showErrorPopup() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Something went wrong. Please try again.'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   void _createProduct() async {
-    if (_formKey.currentState!.validate()) {
-      final id = _productIdController.text;
-      final rating = int.parse(_ratingController.text);
-      final description = _descriptionController.text;
-      final tag = _tagController.text;
+    if (!_formKey.currentState!.validate()) return;
 
-      // Just print for now (later you’ll save this)
-      debugPrint('Created product: ID=$id, Rating=$rating, Desc=$description, Tag=$tag');
-      final uri = Uri.parse('https://world.openfoodfacts.org/api/v0/product/$id.json');
-      final response = await http.get(uri);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        String name = data['product']['product_name'] ?? 'Unknown';
+    final id = _productIdController.text;
+    final rating = int.parse(_ratingController.text);
+    final description = _descriptionController.text;
+    final tag = _tagController.text;
 
-        final p = Product(
-          barcode: id,
-          name: name,
-          rating: rating,
-          tag: tag,
-          description: description,
-        );
-
-        final loaded = await ProductStorage.loadProducts();
-        loaded.add(p);
-        await ProductStorage.saveProducts(loaded);
-      }
-
-      // Go back to previous screen
-      Navigator.pop(context);
+    final uri = Uri.parse('https://world.openfoodfacts.org/api/v0/product/$id.json');
+    final response = await http.get(uri);
+    if (response.statusCode != 200) {
+      _showErrorPopup();
+      return;
     }
+
+    final data = jsonDecode(response.body);
+    if (data['status'] != 1) {
+      _showErrorPopup();
+      return;
+    }
+
+    String name = data['product']['product_name'] ?? 'Unknown';
+
+    final p = Product(
+      barcode: id,
+      name: name,
+      rating: rating,
+      tag: tag,
+      description: description,
+    );
+
+    final loaded = await ProductStorage.loadProducts();
+    loaded.add(p);
+    await ProductStorage.saveProducts(loaded);
+
+    // Go back to previous screen
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Create New Product')),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
