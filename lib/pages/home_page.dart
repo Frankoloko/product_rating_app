@@ -12,6 +12,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Product> _products = [];
+  String? _selectedTag; // null means no filter
 
   @override
   void initState() {
@@ -19,6 +20,17 @@ class _HomePageState extends State<HomePage> {
 
     _loadProducts();
     // ProductStorage.deleteAllProducts();
+  }
+
+  List<String> get _availableTags {
+    final tags = _products.map((p) => p.tag).toSet().toList();
+    tags.sort();
+    return tags;
+  }
+
+  List<Product> get _filteredProducts {
+    if (_selectedTag == null) return _products;
+    return _products.where((p) => p.tag == _selectedTag).toList();
   }
 
   void _loadProducts() async {
@@ -33,15 +45,49 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("Product Ratings"),
       ),
-      body: ListView(
-        children: _products
-            .map(
-              (p) => ListTile(
-                title: Text('${p.name} (${p.rating}/5)'),
-                subtitle: Text('${p.tag} — ${p.description}'),
-              ),
-            )
-            .toList(),
+      body: Column(
+        children: [
+
+          // Tags filter
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: DropdownButton<String>(
+              hint: const Text('Filter by tag'),
+              value: _selectedTag,
+              isExpanded: true,
+              items: [
+                const DropdownMenuItem<String>(
+                  value: null,
+                  child: Text('All'),
+                ),
+                ..._availableTags.map(
+                  (tag) => DropdownMenuItem<String>(
+                    value: tag,
+                    child: Text(tag),
+                  ),
+                ),
+              ],
+              onChanged: (value) {
+                setState(() => _selectedTag = value);
+              },
+            ),
+          ),
+
+          // Products list
+          Expanded(
+            child: ListView(
+              children: _filteredProducts
+                  .map(
+                    (p) => ListTile(
+                      title: Text('${p.name} (${p.rating}/5)'),
+                      subtitle: Text('${p.tag} — ${p.description}'),
+                    ),
+                  )
+                  .toList(),
+            ),
+          )
+
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
