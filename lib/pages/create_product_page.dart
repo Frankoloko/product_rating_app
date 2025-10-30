@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data_models/product.dart';
 import '../other/storage.dart';
+import 'scan_barcode_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -80,6 +81,22 @@ class _CreateProductPageState extends State<CreateProductPage> {
                 ),
                 validator: (value) =>
                     value == null || value.isEmpty ? 'Enter a product ID' : null,
+              ),
+
+              ElevatedButton(
+                onPressed: () async {
+                  final barcode = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ScanBarcodePage()),
+                  );
+
+                  if (barcode != null) {
+                    setState(() {
+                      _productIdController.text = barcode;
+                    });
+                  }
+                },
+                child: const Text('Scan Barcode'),
               ),
 
               const SizedBox(height: 16),
