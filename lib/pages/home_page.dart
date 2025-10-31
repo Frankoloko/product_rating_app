@@ -76,16 +76,26 @@ class _HomePageState extends State<HomePage> {
           // Products list
           Expanded(
             child: ListView(
-              children: _filteredProducts
-                  .map(
-                    (p) => ListTile(
-                      title: Text('${p.name} (${p.rating}/5)'),
-                      subtitle: Text('${p.tag} — ${p.description}'),
-                    ),
-                  )
-                  .toList(),
+              children: _filteredProducts.map(
+                (p) => ListTile(
+                  title: Text('${p.name} (${p.rating}/5)'),
+                  subtitle: Text('${p.tag} — ${p.description}'),
+                  onTap: () async {
+                    // Go to CreateProductPage with this product as an argument
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CreateProductPage(existingProduct: p),
+                      ),
+                    );
+
+                    // Reload after coming back
+                    _loadProducts();
+                  },
+                ),
+              ).toList(),
             ),
-          )
+          ),
 
         ],
       ),

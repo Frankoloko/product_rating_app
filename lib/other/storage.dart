@@ -46,4 +46,11 @@ class ProductStorage {
       print('Error saving products: $e');
     }
   }
+
+  static Future<void> deleteProduct(Product product) async {
+    final products = await loadProducts();
+    products.removeWhere((p) => p.barcode == product.barcode);
+    await saveProducts(products);
+  }
+
 }

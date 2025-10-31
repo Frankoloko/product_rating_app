@@ -6,7 +6,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class CreateProductPage extends StatefulWidget {
-  const CreateProductPage({super.key});
+  final Product? existingProduct;
+
+  const CreateProductPage({super.key, this.existingProduct});
 
   @override
   State<CreateProductPage> createState() => _CreateProductPageState();
@@ -20,6 +22,19 @@ class _CreateProductPageState extends State<CreateProductPage> {
   final _descriptionController = TextEditingController();
   final _ratingController = TextEditingController();
   final _tagController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.existingProduct != null) {
+      _productIdController.text = widget.existingProduct!.barcode;
+      _ratingController.text = widget.existingProduct!.rating.toString();
+      _descriptionController.text = widget.existingProduct!.description;
+      _tagController.text = widget.existingProduct!.tag;
+      // _productName = widget.existingProduct!.name;
+    }
+  }
 
   @override
   void dispose() {
@@ -149,6 +164,20 @@ class _CreateProductPageState extends State<CreateProductPage> {
                 onPressed: _createProduct,
                 child: const Text('Create'),
               ),
+
+              if (widget.existingProduct != null)
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.delete),
+                  label: const Text('Delete Product'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () async {
+                    await ProductStorage.deleteProduct(widget.existingProduct!);
+                    Navigator.pop(context); // go back to list after deleting
+                  },
+                ),
 
             ],
           ),
