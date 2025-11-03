@@ -23,6 +23,8 @@ class _CreateProductPageState extends State<CreateProductPage> {
   final _ratingController = TextEditingController();
   final _tagController = TextEditingController();
 
+  late List<String> _allTags;
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +36,8 @@ class _CreateProductPageState extends State<CreateProductPage> {
       _tagController.text = widget.existingProduct!.tag;
       // _productName = widget.existingProduct!.name;
     }
+
+    _allTags = ['Wine', 'Snacks', 'Chocolate', 'Soda', 'Chips'];
   }
 
   @override
@@ -152,11 +156,37 @@ class _CreateProductPageState extends State<CreateProductPage> {
               ),
 
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _tagController,
-                decoration: const InputDecoration(
-                  labelText: 'Tag (optional)',
-                ),
+
+              Autocomplete<String>(
+                optionsBuilder: (TextEditingValue textEditingValue) {
+                  // If the user hasn’t typed anything, show nothing
+                  if (textEditingValue.text.isEmpty) {
+                    return const Iterable<String>.empty();
+                  }
+
+                  // Filter tags based on what the user typed
+                  return _allTags.where((tag) =>
+                      tag.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                },
+                onSelected: (String selection) {
+                  _tagController.text = selection; // Update the controller
+                },
+                fieldViewBuilder:
+                    (context, textEditingController, focusNode, onFieldSubmitted) {
+                  // Use your existing controller
+                  textEditingController.text = _tagController.text;
+
+                  return TextFormField(
+                    controller: textEditingController,
+                    focusNode: focusNode,
+                    decoration: const InputDecoration(
+                      labelText: 'Tag (optional)',
+                    ),
+                    onChanged: (value) {
+                      _tagController.text = value;
+                    },
+                  );
+                },
               ),
 
               const SizedBox(height: 24),
