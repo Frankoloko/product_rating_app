@@ -6,9 +6,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class CreateProductPage extends StatefulWidget {
-  final Product? existingProduct;
+  final Product? selectedProduct;
+  final List<Product>? allProducts;
 
-  const CreateProductPage({super.key, this.existingProduct});
+  const CreateProductPage({super.key, this.selectedProduct, this.allProducts});
 
   @override
   State<CreateProductPage> createState() => _CreateProductPageState();
@@ -29,15 +30,19 @@ class _CreateProductPageState extends State<CreateProductPage> {
   void initState() {
     super.initState();
 
-    if (widget.existingProduct != null) {
-      _productIdController.text = widget.existingProduct!.barcode;
-      _ratingController.text = widget.existingProduct!.rating.toString();
-      _descriptionController.text = widget.existingProduct!.description;
-      _tagController.text = widget.existingProduct!.tag;
-      // _productName = widget.existingProduct!.name;
+    if (widget.selectedProduct != null) {
+      _productIdController.text = widget.selectedProduct!.barcode;
+      _ratingController.text = widget.selectedProduct!.rating.toString();
+      _descriptionController.text = widget.selectedProduct!.description;
+      _tagController.text = widget.selectedProduct!.tag;
+      // _productName = widget.selectedProduct!.name;
     }
 
-    _allTags = ['Wine', 'Snacks', 'Chocolate', 'Soda', 'Chips'];
+    _allTags = (widget.allProducts ?? [])
+      .map((p) => p.tag.trim())
+      .where((tag) => tag.isNotEmpty)
+      .toSet() // remove duplicates
+      .toList();
   }
 
   @override
@@ -195,7 +200,7 @@ class _CreateProductPageState extends State<CreateProductPage> {
                 child: const Text('Create'),
               ),
 
-              if (widget.existingProduct != null)
+              if (widget.selectedProduct != null)
                 ElevatedButton.icon(
                   icon: const Icon(Icons.delete),
                   label: const Text('Delete Product'),
@@ -204,7 +209,7 @@ class _CreateProductPageState extends State<CreateProductPage> {
                     foregroundColor: Colors.white,
                   ),
                   onPressed: () async {
-                    await ProductStorage.deleteProduct(widget.existingProduct!);
+                    await ProductStorage.deleteProduct(widget.selectedProduct!);
                     Navigator.pop(context); // go back to list after deleting
                   },
                 ),

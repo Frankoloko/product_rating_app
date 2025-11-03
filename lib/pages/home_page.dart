@@ -11,7 +11,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Product> _products = [];
+  List<Product> _allProducts = [];
   String? _selectedTag; // null means no filter
 
   @override
@@ -23,19 +23,19 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<String> get _availableTags {
-    final tags = _products.map((p) => p.tag).toSet().toList();
+    final tags = _allProducts.map((p) => p.tag).toSet().toList();
     tags.sort();
     return tags;
   }
 
   List<Product> get _filteredProducts {
-    if (_selectedTag == null) return _products;
-    return _products.where((p) => p.tag == _selectedTag).toList();
+    if (_selectedTag == null) return _allProducts;
+    return _allProducts.where((p) => p.tag == _selectedTag).toList();
   }
 
   void _loadProducts() async {
     final loaded = await ProductStorage.loadProducts();
-    setState(() => _products = loaded);
+    setState(() => _allProducts = loaded);
   }
 
   @override
@@ -85,7 +85,7 @@ class _HomePageState extends State<HomePage> {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CreateProductPage(existingProduct: p),
+                        builder: (context) => CreateProductPage(selectedProduct: p, allProducts: _allProducts),
                       ),
                     );
 
@@ -104,7 +104,7 @@ class _HomePageState extends State<HomePage> {
           // Navigate to the create product screen
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const CreateProductPage()),
+            MaterialPageRoute(builder: (context) => CreateProductPage(allProducts: _allProducts)),
           );
           // After returning, you could refresh data later
           _loadProducts();
