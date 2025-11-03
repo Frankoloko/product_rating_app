@@ -1,0 +1,2 @@
+* Change "description" to "notes". The problem is, not just changing the Title, but also changing the saved data in the JSON
+* Remove barcode field, add name field, remove user's ability to type in a barcode, when user's pressed +, go into camera scanning right away
