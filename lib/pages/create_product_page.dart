@@ -17,6 +17,7 @@ class CreateProductPage extends StatefulWidget {
 
 class _CreateProductPageState extends State<CreateProductPage> {
   final _formKey = GlobalKey<FormState>();
+  bool _inUpdateMode = false;
 
   final _productIdController = TextEditingController(text: '5449000000996');  // Coca-cola
   // final _productIdController = TextEditingController();
@@ -30,7 +31,9 @@ class _CreateProductPageState extends State<CreateProductPage> {
   void initState() {
     super.initState();
 
-    if (widget.selectedProduct != null) {
+    _inUpdateMode = widget.selectedProduct != null;
+
+    if (_inUpdateMode) {
       _productIdController.text = widget.selectedProduct!.barcode;
       _ratingController.text = widget.selectedProduct!.rating.toString();
       _descriptionController.text = widget.selectedProduct!.description;
@@ -105,7 +108,7 @@ class _CreateProductPageState extends State<CreateProductPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create New Product')),
+      appBar: AppBar(title: Text(_inUpdateMode ? 'Update product' : 'Create New Product')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -118,25 +121,27 @@ class _CreateProductPageState extends State<CreateProductPage> {
                 decoration: const InputDecoration(
                   labelText: 'Product ID',
                 ),
+                enabled: !_inUpdateMode,
                 validator: (value) =>
                     value == null || value.isEmpty ? 'Enter a product ID' : null,
               ),
 
-              ElevatedButton(
-                onPressed: () async {
-                  final barcode = await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ScanBarcodePage()),
-                  );
+              if (!_inUpdateMode)
+                ElevatedButton(
+                  onPressed: () async {
+                    final barcode = await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ScanBarcodePage()),
+                    );
 
-                  if (barcode != null) {
-                    setState(() {
-                      _productIdController.text = barcode;
-                    });
-                  }
-                },
-                child: const Text('Scan Barcode'),
-              ),
+                    if (barcode != null) {
+                      setState(() {
+                        _productIdController.text = barcode;
+                      });
+                    }
+                  },
+                  child: const Text('Scan Barcode'),
+                ),
 
               const SizedBox(height: 16),
               TextFormField(
@@ -161,7 +166,6 @@ class _CreateProductPageState extends State<CreateProductPage> {
               ),
 
               const SizedBox(height: 16),
-
               Autocomplete<String>(
                 optionsBuilder: (TextEditingValue textEditingValue) {
                   // If the user hasn’t typed anything, show nothing
@@ -197,10 +201,11 @@ class _CreateProductPageState extends State<CreateProductPage> {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _createProduct,
-                child: const Text('Create'),
+                child: Text(_inUpdateMode ? 'Update' : 'Create'),
               ),
 
-              if (widget.selectedProduct != null)
+              const SizedBox(height: 24),
+              if (_inUpdateMode)
                 ElevatedButton.icon(
                   icon: const Icon(Icons.delete),
                   label: const Text('Delete Product'),
