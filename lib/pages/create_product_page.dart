@@ -107,7 +107,8 @@ class _CreateProductPageState extends State<CreateProductPage> {
       return;
     }
 
-    String name = data['product']['product_name'] ?? 'Unknown';
+    String name = data['product']['product_name_en'] ?? 'Unknown';
+    String imageURL = data['product']['image_small_url'] ?? 'Unknown';
 
     final p = Product(
       barcode: id,
@@ -115,6 +116,7 @@ class _CreateProductPageState extends State<CreateProductPage> {
       rating: rating,
       tag: tag,
       description: description,
+      imageURL: imageURL,
     );
 
     final loaded = await ProductStorage.loadProducts();

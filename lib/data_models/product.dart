@@ -6,6 +6,7 @@ class Product {
   final int rating;
   final String tag;
   final String description;
+  final String imageURL;
 
   Product({
     required this.barcode,
@@ -13,6 +14,7 @@ class Product {
     required this.rating,
     required this.tag,
     required this.description,
+    required this.imageURL,
   });
 
   Map<String, dynamic> toJson() => {
@@ -21,6 +23,7 @@ class Product {
     'rating': rating,
     'tag': tag,
     'description': description,
+    'imageURL': imageURL,
   };
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
@@ -29,6 +32,7 @@ class Product {
     rating: json['rating'],
     tag: json['tag'],
     description: json['description'],
+    imageURL: json['imageURL'],
   );
 }
 
