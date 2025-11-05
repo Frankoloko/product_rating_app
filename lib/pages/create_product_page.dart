@@ -154,6 +154,9 @@ class _CreateProductPageState extends State<CreateProductPage> {
                   labelText: 'Product Name',
                 ),
                 enabled: false,
+                keyboardType: TextInputType.multiline,
+                minLines: 1, // Starts as a single line
+                maxLines: null, // Grows as the user types (wraps downward)
               ),
 
               const SizedBox(height: 16),
@@ -176,6 +179,8 @@ class _CreateProductPageState extends State<CreateProductPage> {
                 decoration: const InputDecoration(
                   labelText: 'Your notes (optional)',
                 ),
+                minLines: 1, // Starts as a single line
+                maxLines: null, // Grows as the user types (wraps downward)
               ),
 
               const SizedBox(height: 16),
