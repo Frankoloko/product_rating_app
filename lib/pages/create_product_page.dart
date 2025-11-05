@@ -39,8 +39,28 @@ class _CreateProductPageState extends State<CreateProductPage> {
       _descriptionController.text = widget.selectedProduct!.description;
       _tagController.text = widget.selectedProduct!.tag;
       // _productName = widget.selectedProduct!.name;
+    } else {
+      // If we are in create new mode, go straight to the barcode scan page
+
+      // Delay navigation until after first frame
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final barcode = await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ScanBarcodePage()),
+        );
+
+        if (barcode != null) {
+          setState(() {
+            _productIdController.text = barcode;
+          });
+        } else {
+          // The user didn't scan anything, so go back to home page.
+          Navigator.pop(context);
+        }
+      });
     }
 
+    // Get the list of tags the user can use
     _allTags = (widget.allProducts ?? [])
       .map((p) => p.tag.trim())
       .where((tag) => tag.isNotEmpty)
