@@ -20,7 +20,7 @@ class _CreateProductPageState extends State<CreateProductPage> {
   bool _inUpdateMode = false;
 
   final _productIdController = TextEditingController(text: '5449000000996');  // Coca-cola
-  // final _productIdController = TextEditingController();
+  final _productNameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _ratingController = TextEditingController();
   final _tagController = TextEditingController();
@@ -38,7 +38,7 @@ class _CreateProductPageState extends State<CreateProductPage> {
       _ratingController.text = widget.selectedProduct!.rating.toString();
       _descriptionController.text = widget.selectedProduct!.description;
       _tagController.text = widget.selectedProduct!.tag;
-      // _productName = widget.selectedProduct!.name;
+      _productNameController.text = widget.selectedProduct!.name;
     } else {
       // If we are in create new mode, go straight to the barcode scan page
 
@@ -136,32 +136,25 @@ class _CreateProductPageState extends State<CreateProductPage> {
           child: Column(
             children: [
 
+              // // Keep around for debugging purposes
+              // TextFormField(
+              //   controller: _productIdController,
+              //   decoration: const InputDecoration(
+              //     labelText: 'Product ID',
+              //   ),
+              //   enabled: !_inUpdateMode,
+              //   validator: (value) =>
+              //       value == null || value.isEmpty ? 'Enter a product ID' : null,
+              // ),
+
+              // Keep around for debugging purposes
               TextFormField(
-                controller: _productIdController,
+                controller: _productNameController,
                 decoration: const InputDecoration(
-                  labelText: 'Product ID',
+                  labelText: 'Product Name',
                 ),
-                enabled: !_inUpdateMode,
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Enter a product ID' : null,
+                enabled: false,
               ),
-
-              if (!_inUpdateMode)
-                ElevatedButton(
-                  onPressed: () async {
-                    final barcode = await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ScanBarcodePage()),
-                    );
-
-                    if (barcode != null) {
-                      setState(() {
-                        _productIdController.text = barcode;
-                      });
-                    }
-                  },
-                  child: const Text('Scan Barcode'),
-                ),
 
               const SizedBox(height: 16),
               TextFormField(
@@ -181,7 +174,7 @@ class _CreateProductPageState extends State<CreateProductPage> {
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(
-                  labelText: 'Description (optional)',
+                  labelText: 'Your notes (optional)',
                 ),
               ),
 
