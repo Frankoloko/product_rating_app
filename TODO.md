@@ -1,3 +1,2 @@
 * Change "description" to "notes". The problem is, not just changing the Title, but also changing the saved data in the JSON
-* Remove barcode field, add name field, remove user's ability to type in a barcode
-* Add a picture or something after the scan is done
+* Don't allow resaving the same product again. If the user scans a product, check if it exists in their database already. If so, show a popup like "You already have this product scanned" and then open the Update screen on that product.
