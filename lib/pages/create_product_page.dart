@@ -25,6 +25,7 @@ class _CreateProductPageState extends State<CreateProductPage> {
   final _descriptionController = TextEditingController();
   final _ratingController = TextEditingController();
   final _tagController = TextEditingController();
+  final _imageURLController = TextEditingController();
 
   late List<String> _allTags;
 
@@ -40,24 +41,12 @@ class _CreateProductPageState extends State<CreateProductPage> {
       _descriptionController.text = widget.selectedProduct!.description;
       _tagController.text = widget.selectedProduct!.tag;
       _productNameController.text = widget.selectedProduct!.name;
+      _imageURLController.text = widget.selectedProduct!.imageURL;
     } else {
       // If we are in create new mode, go straight to the barcode scan page
-
       // Delay navigation until after first frame
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        final barcode = await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ScanBarcodePage()),
-        );
-
-        if (barcode != null) {
-          setState(() {
-            _productIdController.text = barcode;
-          });
-        } else {
-          // The user didn't scan anything, so go back to home page.
-          Navigator.pop(context);
-        }
+        _scanBarcode();
       });
     }
 
@@ -67,6 +56,49 @@ class _CreateProductPageState extends State<CreateProductPage> {
       .where((tag) => tag.isNotEmpty)
       .toSet() // remove duplicates
       .toList();
+  }
+
+  void _scanBarcode() async {
+    final barcode = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ScanBarcodePage()),
+    );
+
+    if (barcode == null) {
+      // The user didn't scan anything, so go back to home page.
+      Navigator.pop(context);
+      return;
+    }
+
+    final uri = Uri.parse('https://world.openfoodfacts.org/api/v0/product/$barcode.json');
+    final response = await http.get(uri);
+    if (response.statusCode != 200) {
+      _showErrorPopup();
+      return;
+    }
+
+    final data = jsonDecode(response.body);
+    if (data['status'] != 1) {
+      if (data["status_verbose"] == "product not found") {
+        _showErrorPopup(message: "Product not found");
+      } else {
+        // Generic error
+        _showErrorPopup();
+      }
+
+      _showErrorPopup();
+      log(data);
+      return;
+    }
+
+    String name = data['product']['product_name_en'] ?? 'Unknown';
+    String imageURL = data['product']['image_small_url'] ?? 'Unknown';
+
+    setState(() {
+      _productIdController.text = barcode;
+      _productNameController.text = name;
+      _imageURLController.text = imageURL;
+    });
   }
 
   @override
@@ -94,30 +126,8 @@ class _CreateProductPageState extends State<CreateProductPage> {
     final rating = int.parse(_ratingController.text);
     final description = _descriptionController.text;
     final tag = _tagController.text;
-
-    final uri = Uri.parse('https://world.openfoodfacts.org/api/v0/product/$id.json');
-    final response = await http.get(uri);
-    if (response.statusCode != 200) {
-      _showErrorPopup();
-      return;
-    }
-
-    final data = jsonDecode(response.body);
-    if (data['status'] != 1) {
-      if (data["status_verbose"] == "product not found") {
-        _showErrorPopup(message: "Product not found");
-      } else {
-        // Generic error
-        _showErrorPopup();
-      }
-
-      _showErrorPopup();
-      log(data);
-      return;
-    }
-
-    String name = data['product']['product_name_en'] ?? 'Unknown';
-    String imageURL = data['product']['image_small_url'] ?? 'Unknown';
+    final name = _productNameController.text;
+    final image = _imageURLController.text;
 
     final p = Product(
       barcode: id,
@@ -125,7 +135,7 @@ class _CreateProductPageState extends State<CreateProductPage> {
       rating: rating,
       tag: tag,
       description: description,
-      imageURL: imageURL,
+      imageURL: image,
     );
 
     final loaded = await ProductStorage.loadProducts();
@@ -158,17 +168,21 @@ class _CreateProductPageState extends State<CreateProductPage> {
               //       value == null || value.isEmpty ? 'Enter a product ID' : null,
               // ),
 
-              // Keep around for debugging purposes
-              TextFormField(
-                controller: _productNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Product Name',
+              if (_imageURLController.text.isNotEmpty)
+                Image.network(
+                  _imageURLController.text,
+                  height: 200,
+                  fit: BoxFit.cover,
                 ),
-                enabled: false,
-                keyboardType: TextInputType.multiline,
-                minLines: 1, // Starts as a single line
-                maxLines: null, // Grows as the user types (wraps downward)
-              ),
+
+              if (_productNameController.text.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(
+                  _productNameController.text,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ],
 
               const SizedBox(height: 16),
               TextFormField(
