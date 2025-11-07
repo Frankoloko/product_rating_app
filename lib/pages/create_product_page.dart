@@ -4,6 +4,7 @@ import '../other/storage.dart';
 import 'scan_barcode_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:developer';
 
 class CreateProductPage extends StatefulWidget {
   final Product? selectedProduct;
@@ -77,10 +78,10 @@ class _CreateProductPageState extends State<CreateProductPage> {
     super.dispose();
   }
 
-  void _showErrorPopup() {
+  void _showErrorPopup({String message = "Something went wrong. Please try again."}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Something went wrong. Please try again.'),
+      SnackBar(
+        content: Text(message),
         backgroundColor: Colors.red,
       ),
     );
@@ -103,7 +104,15 @@ class _CreateProductPageState extends State<CreateProductPage> {
 
     final data = jsonDecode(response.body);
     if (data['status'] != 1) {
+      if (data["status_verbose"] == "product not found") {
+        _showErrorPopup(message: "Product not found");
+      } else {
+        // Generic error
+        _showErrorPopup();
+      }
+
       _showErrorPopup();
+      log(data);
       return;
     }
 
